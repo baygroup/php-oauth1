@@ -1,0 +1,31 @@
+{
+    "name": "baygroup/php-oauth1",
+    "description": "PHP OAuth 1",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bathulah Mahir",
+            "email": "bathulah@capitalbay.com.my"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "BayGroup\\OAuth1\\": "src/"
+        },
+        "files": ["oauth_helper.php"]
+    },
+    "require": {
+        "php-curl-class/php-curl-class": "^8.3",
+        "phpclasses/oauth-api": ">=1.0.104"
+    },
+    "repositories":
+[
+    {
+        "type": "composer",
+        "url": "https:\/\/www.phpclasses.org\/"
+    },
+    {
+        "packagist": false
+    }
+]
+}
