@@ -111,17 +111,17 @@ class OAuth1{
     public function oauth_list_value_parameter()
     {
         return
-        [
-            "oauth_callback" => $this->oauth_callback,
-            "oauth_consumer_key" => $this->oauth_consumer_key,
-            'oauth_token' => $this->oauth_token,
-            "oauth_signature_method" => $this->oauth_signature_method,
-            'oauth_signature' => '',
-            "oauth_timestamp" => $this->oauth_timestamp,
-            "oauth_nonce" => $this->oauth_nonce,
-            "oauth_version" => $this->oauth_version,
-            "oauth_verifier" => $this->oauth_verifier
-        ];
+            [
+                "oauth_callback" => $this->oauth_callback,
+                "oauth_consumer_key" => $this->oauth_consumer_key,
+                'oauth_token' => $this->oauth_token,
+                "oauth_signature_method" => $this->oauth_signature_method,
+                'oauth_signature' => '',
+                "oauth_timestamp" => $this->oauth_timestamp,
+                "oauth_nonce" => $this->oauth_nonce,
+                "oauth_version" => $this->oauth_version,
+                "oauth_verifier" => $this->oauth_verifier
+            ];
 
     }
 
@@ -189,7 +189,7 @@ class OAuth1{
         {
             if(!in_array($key,$this->oauth_parameter()))
             {
-                var_dump($key);
+
                 unset($parameters[$key]);
                 continue;
             }
@@ -212,31 +212,30 @@ class OAuth1{
         $parameters = $this->orderByLexicographicalOrderingArray($parameters);
         $concat_parameters = $this->concatParameter($parameters);
         $this->signature_base_string = $this->generateSignatureBaseString($request_type,$this->url,$concat_parameters);
-        var_dump($this->signature_base_string);
         $signature = $this->generateSignature($this->oauth_signature_method,$this->signature_base_string,$this->combined_secret);
         $parameters['oauth_signature'] = $signature;
         $authorization_header = $this->generateAuthorizationHeader($parameters);
-        var_dump('ha',$authorization_header );
+
         return $authorization_header;
     }
 
-    public function getRequestToken($request_token_url,$callback)
+    public function getRequestToken($request_token_url,$callback_url)
     {
 
-            $this->oauth_callback = $callback;
-            $auth_header = $this->processRequest($request_token_url);
-            $this->setRequesTokenUrl($request_token_url);
+        $this->oauth_callback = $callback_url;
+        $auth_header = $this->processRequest($request_token_url);
+        $this->setRequesTokenUrl($request_token_url);
 
-            $curl = $this->surf($request_token_url,$auth_header);
-            parse_str($curl->response,$output);
+        $curl = $this->surf($request_token_url,$auth_header);
+        parse_str($curl->response,$output);
 
-            if(isset($output['oauth_problem']))
-            {
-                throw new OAuthException($output['oauth_problem'].','.$output['oauth_problem_advice']);
-            }
-            var_dump($output);
-            $this->setToken($output['oauth_token']);
-            $this->setTokenSecret($output['oauth_token_secret']);
+        if(isset($output['oauth_problem']))
+        {
+            throw new OAuthException($output['oauth_problem'].','.$output['oauth_problem_advice']);
+        }
+
+        $this->setToken($output['oauth_token']);
+        $this->setTokenSecret($output['oauth_token_secret']);
     }
 
     public function getAccessToken($access_token_url,$parameter = [])
@@ -250,21 +249,15 @@ class OAuth1{
 
         parse_str($curl->response, $output);
 
-        var_dump($this->combined_secret);
-        var_dump($this->url);
-        var_dump($this->signature_base_string);
-
         if(isset($output['oauth_problem']))
         {
             throw new OAuthException($output['oauth_problem'].', '.$output['oauth_problem_advice']);
         }
-        var_dump($output,'haa la');
 
         $this->setToken($output["oauth_token"]);
         $this->setTokenSecret($output["oauth_token_secret"]);
         $this->oauth_expires_in = $output["oauth_expires_in"];
 
-        var_dump($this->combined_secret,$this->oauth_token_secret,$this->oauth_token);
     }
 
     public function getAuthorize($url)
@@ -275,14 +268,30 @@ class OAuth1{
         exit();
     }
 
+    public function getOauthToken()
+    {
+        return $this->oauth_token;
+    }
+
+    public function getOAuthTokenSecret()
+    {
+        return $this->oauth_token_secret;
+    }
+
     public function to($url,array $parameter = [])
     {
 
         $this->authorization_header = $this->processRequest($url,$parameter);
         $query_string_parameter = $this->arrayToQueryString($parameter);
-        $this->url = $url.'?'.$query_string_parameter;
+        if(count($parameter))
+            $this->url = $url.'?'.$query_string_parameter;
+        else
+            $this->url = $url;
+
         $curl = $this->surf($this->url,$this->authorization_header);
-        var_dump($curl->response);
+
+        return $curl;
+
     }
 
     public function surf($url,$auth_header)
@@ -297,7 +306,15 @@ class OAuth1{
 
     public function arrayToQueryString(array $array)
     {
-        return str_replace("%3D","=",urlencode(http_build_query($array)));
+        $string = "";
+        foreach($array as $key => $value)
+        {
+            $string .= $key.'='.urlencode($value).'&';
+        }
+
+        $string = substr($string,0,-1);
+
+        return $string;
     }
 
 
