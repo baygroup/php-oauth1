@@ -15,8 +15,7 @@
         "files": ["oauth_helper.php"]
     },
     "require": {
-        "php-curl-class/php-curl-class": "^8.3",
-        "phpclasses/oauth-api": ">=1.0.104"
+        "php-curl-class/php-curl-class": "^8.3"
     },
     "repositories":
 [
